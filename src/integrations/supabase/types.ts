@@ -9,7 +9,149 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      bookings: {
+        Row: {
+          check_in: string
+          check_out: string
+          created_at: string | null
+          guest_id: string
+          guests: number
+          id: string
+          listing_id: string
+          special_requests: string | null
+          status: Database["public"]["Enums"]["booking_status"] | null
+          total_price: number
+          updated_at: string | null
+        }
+        Insert: {
+          check_in: string
+          check_out: string
+          created_at?: string | null
+          guest_id: string
+          guests?: number
+          id?: string
+          listing_id: string
+          special_requests?: string | null
+          status?: Database["public"]["Enums"]["booking_status"] | null
+          total_price: number
+          updated_at?: string | null
+        }
+        Update: {
+          check_in?: string
+          check_out?: string
+          created_at?: string | null
+          guest_id?: string
+          guests?: number
+          id?: string
+          listing_id?: string
+          special_requests?: string | null
+          status?: Database["public"]["Enums"]["booking_status"] | null
+          total_price?: number
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bookings_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "listings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      listings: {
+        Row: {
+          amenities: string[] | null
+          bathrooms: number
+          bedrooms: number
+          created_at: string | null
+          description: string
+          host_id: string
+          id: string
+          images: string[] | null
+          is_active: boolean | null
+          latitude: number | null
+          listing_type: Database["public"]["Enums"]["listing_type"]
+          location: string
+          longitude: number | null
+          max_guests: number
+          price_per_night: number
+          title: string
+          updated_at: string | null
+        }
+        Insert: {
+          amenities?: string[] | null
+          bathrooms?: number
+          bedrooms?: number
+          created_at?: string | null
+          description: string
+          host_id: string
+          id?: string
+          images?: string[] | null
+          is_active?: boolean | null
+          latitude?: number | null
+          listing_type: Database["public"]["Enums"]["listing_type"]
+          location: string
+          longitude?: number | null
+          max_guests?: number
+          price_per_night: number
+          title: string
+          updated_at?: string | null
+        }
+        Update: {
+          amenities?: string[] | null
+          bathrooms?: number
+          bedrooms?: number
+          created_at?: string | null
+          description?: string
+          host_id?: string
+          id?: string
+          images?: string[] | null
+          is_active?: boolean | null
+          latitude?: number | null
+          listing_type?: Database["public"]["Enums"]["listing_type"]
+          location?: string
+          longitude?: number | null
+          max_guests?: number
+          price_per_night?: number
+          title?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          bio: string | null
+          created_at: string | null
+          full_name: string | null
+          id: string
+          is_host: boolean | null
+          phone: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          avatar_url?: string | null
+          bio?: string | null
+          created_at?: string | null
+          full_name?: string | null
+          id: string
+          is_host?: boolean | null
+          phone?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          avatar_url?: string | null
+          bio?: string | null
+          created_at?: string | null
+          full_name?: string | null
+          id?: string
+          is_host?: boolean | null
+          phone?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -18,7 +160,8 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      [_ in never]: never
+      booking_status: "pending" | "confirmed" | "cancelled" | "completed"
+      listing_type: "entire_place" | "private_room" | "shared_room"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -133,6 +276,9 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      booking_status: ["pending", "confirmed", "cancelled", "completed"],
+      listing_type: ["entire_place", "private_room", "shared_room"],
+    },
   },
 } as const
