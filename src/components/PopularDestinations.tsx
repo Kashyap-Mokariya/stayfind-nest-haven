@@ -43,12 +43,12 @@ export default function PopularDestinations() {
                 <img
                   src={destination.image}
                   alt={destination.name}
-                  className="w-full h-full object-cover"
+                  className="w-full h-[200px] object-cover group-hover:scale-110 transition-transform duration-500"
                   loading="lazy"
                 />
               </div>
-              <CardContent className="p-3">
-                <h3 className="font-semibold text-gray-900 mb-1 text-sm">
+              <CardContent className="p-3 relative z-20">
+                <h3 className="font-semibold text-gray-900 mb-1 text-sm group-hover:text-blue-600 transition-colors">
                   {destination.name}
                 </h3>
                 <div className="flex items-center text-xs text-gray-600">
