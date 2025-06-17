@@ -56,7 +56,7 @@ export default function HomePage() {
               <img
                 src="https://images.unsplash.com/photo-1506905925346-21bda4d32df4"
                 alt="Beautiful destination"
-                className="relative z-10 w-full h-80 lg:h-96 object-cover rounded-3xl shadow-2xl"
+                className="relative w-full h-80 lg:h-96 object-cover rounded-3xl shadow-2xl"
               />
             </div>
           </div>

@@ -14,12 +14,12 @@ export default function PropertyCard({ listing }: PropertyCardProps) {
 
   return (
     <Link to={`/listing/${listing.id}`}>
-      <Card className="overflow-hidden hover:shadow-lg transition-shadow cursor-pointer">
+      <Card className="group cursor-pointer border-0 shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden bg-white rounded-2xl relative z-10">
         <div className="relative h-48">
           <img
             src={imageUrl}
             alt={listing.title}
-            className="w-full h-full object-cover"
+            className="w-full h-full object-cover group-hover:scale-110 group-hover:text-blue-600 transition-all duration-500"
           />
           <Badge className="absolute top-2 left-2 bg-white text-gray-800">
             {listing.listing_type.replace('_', ' ')}
