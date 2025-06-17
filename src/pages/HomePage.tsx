@@ -1,75 +1,71 @@
 
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useListings } from '@/hooks/useListings';
 import Header from '@/components/Header';
 import SearchBar, { SearchParams } from '@/components/SearchBar';
-import PropertyCard from '@/components/PropertyCard';
-import { Skeleton } from '@/components/ui/skeleton';
+import PopularDestinations from '@/components/PopularDestinations';
 
 export default function HomePage() {
-  const { data: listings, isLoading } = useListings();
-  const [searchParams, setSearchParams] = useState<SearchParams | null>(null);
+  const navigate = useNavigate();
 
-  const filteredListings = listings?.filter((listing) => {
-    if (!searchParams) return true;
+  const handleSearch = (params: SearchParams) => {
+    // Navigate to listings page with search parameters
+    const searchParams = new URLSearchParams();
+    if (params.location) searchParams.set('location', params.location);
+    if (params.checkIn) searchParams.set('checkIn', params.checkIn);
+    if (params.checkOut) searchParams.set('checkOut', params.checkOut);
+    if (params.guests) searchParams.set('guests', params.guests.toString());
     
-    const locationMatch = !searchParams.location || 
-      listing.location.toLowerCase().includes(searchParams.location.toLowerCase());
-    const guestsMatch = listing.max_guests >= searchParams.guests;
-    
-    return locationMatch && guestsMatch;
-  });
+    navigate(`/listings?${searchParams.toString()}`);
+  };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen">
       <Header />
       
-      {/* Hero Section */}
-      <div className="relative bg-gradient-to-r from-blue-600 to-purple-700 text-white">
-        <div className="absolute inset-0 bg-black opacity-20"></div>
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
-          <div className="text-center mb-8">
-            <h1 className="text-4xl md:text-6xl font-bold mb-4">
-              Find Your Perfect Stay
-            </h1>
-            <p className="text-xl md:text-2xl mb-8">
-              Discover unique places to stay around the world
-            </p>
-          </div>
-          <SearchBar onSearch={setSearchParams} />
+      {/* Hero Section with Background */}
+      <div className="relative min-h-screen bg-gradient-to-br from-orange-400 via-teal-300 to-teal-600 overflow-hidden">
+        {/* Background decorative elements */}
+        <div className="absolute inset-0">
+          <div className="absolute top-20 left-10 w-32 h-32 bg-white/20 rounded-full blur-xl"></div>
+          <div className="absolute top-40 right-20 w-24 h-24 bg-white/15 rounded-full blur-lg"></div>
+          <div className="absolute bottom-32 left-1/4 w-40 h-40 bg-white/10 rounded-full blur-2xl"></div>
         </div>
-      </div>
 
-      {/* Listings Section */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <h2 className="text-3xl font-bold text-gray-900 mb-8">
-          {searchParams ? 'Search Results' : 'Popular Destinations'}
-        </h2>
-        
-        {isLoading ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {[...Array(8)].map((_, i) => (
-              <div key={i} className="space-y-3">
-                <Skeleton className="h-48 w-full rounded-lg" />
-                <Skeleton className="h-4 w-3/4" />
-                <Skeleton className="h-4 w-1/2" />
-                <Skeleton className="h-4 w-1/4" />
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center min-h-[80vh]">
+            {/* Left Content */}
+            <div className="text-white space-y-8">
+              <div className="space-y-2">
+                <p className="text-sm font-medium tracking-wider uppercase opacity-90">
+                  MOUNTAINS | PLAINS | BEACHES
+                </p>
+                <h1 className="text-5xl md:text-6xl font-bold leading-tight">
+                  Spend your vacation with our activities
+                </h1>
               </div>
-            ))}
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {filteredListings?.map((listing) => (
-              <PropertyCard key={listing.id} listing={listing} />
-            ))}
-          </div>
-        )}
 
-        {filteredListings?.length === 0 && (
-          <div className="text-center py-12">
-            <p className="text-gray-500 text-lg">No properties found matching your criteria.</p>
+              {/* Popular Destinations */}
+              <PopularDestinations />
+            </div>
+
+            {/* Right Content - Floating Image */}
+            <div className="relative lg:block hidden">
+              <div className="absolute inset-0 bg-gradient-to-br from-teal-400 to-blue-600 rounded-full opacity-20 blur-3xl transform scale-150"></div>
+              <img
+                src="https://images.unsplash.com/photo-1506905925346-21bda4d32df4"
+                alt="Beautiful destination"
+                className="relative z-10 w-full h-96 object-cover rounded-3xl shadow-2xl"
+              />
+            </div>
           </div>
-        )}
+
+          {/* Search Bar at Bottom */}
+          <div className="pb-12">
+            <SearchBar onSearch={handleSearch} />
+          </div>
+        </div>
       </div>
     </div>
   );
