@@ -36,13 +36,15 @@ export default function PopularDestinations() {
           <Link 
             key={destination.id}
             to={`/listings?location=${encodeURIComponent(destination.name.replace('Trip To ', ''))}`}
+            className="block"
           >
-            <Card className="overflow-hidden hover:shadow-lg transition-all duration-300 hover:scale-105 bg-white/90 backdrop-blur-sm">
+            <Card className="overflow-hidden transition-all duration-300 hover:shadow-lg hover:scale-105 bg-white/90 backdrop-blur-sm group">
               <div className="relative h-32">
                 <img
                   src={destination.image}
                   alt={destination.name}
                   className="w-full h-full object-cover"
+                  loading="lazy"
                 />
               </div>
               <CardContent className="p-3">
