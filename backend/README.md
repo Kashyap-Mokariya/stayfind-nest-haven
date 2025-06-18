@@ -1,43 +1,39 @@
 
-# StayFinder Backend API
+# StayFinder Backend API with Supabase Integration
 
-A Node.js/Express.js backend API for the StayFinder accommodation booking platform.
+A Node.js/Express.js backend API that integrates with Supabase for the StayFinder accommodation booking platform. This backend maintains all current functionality while providing a traditional REST API layer.
 
 ## Features
 
-- User authentication (JWT-based)
-- Listing management (CRUD operations)
-- Booking system
-- Like/Unlike functionality
-- User profiles
-- Image upload support
-- Rate limiting
-- Security headers
-- Input validation
-- Pagination
+- **Supabase Integration**: Uses existing Supabase database and authentication
+- **Authentication**: Supabase Auth integration (no JWT handling needed)
+- **Listing Management**: Full CRUD operations for listings
+- **Booking System**: Complete booking functionality
+- **Like/Unlike**: User like functionality for listings
+- **User Profiles**: Profile management
+- **File Upload Support**: Ready for Cloudinary integration
+- **Security**: Rate limiting, CORS, security headers
+- **Validation**: Input validation and sanitization
 
 ## Technology Stack
 
 - **Runtime**: Node.js
 - **Framework**: Express.js
-- **Database**: PostgreSQL
-- **Authentication**: JWT (JSON Web Tokens)
-- **Password Hashing**: bcryptjs
-- **File Upload**: Multer + Cloudinary
+- **Database**: Supabase (PostgreSQL)
+- **Authentication**: Supabase Auth
 - **Validation**: express-validator
 - **Security**: Helmet, CORS, Rate Limiting
 
 ## Prerequisites
 
 - Node.js (v16 or higher)
-- PostgreSQL (v12 or higher)
-- Cloudinary account (for image uploads)
+- Existing Supabase project
+- Access to Supabase service role key
 
 ## Installation
 
-1. Clone the repository:
+1. Navigate to the backend directory:
 ```bash
-git clone <repository-url>
 cd backend
 ```
 
@@ -49,17 +45,10 @@ npm install
 3. Set up environment variables:
 ```bash
 cp .env.example .env
-# Edit .env with your configuration
+# Edit .env with your Supabase configuration
 ```
 
-4. Set up the database:
-```bash
-# Create a PostgreSQL database named 'stayfinder'
-# Run the schema.sql file to create tables
-psql -d stayfinder -f database/schema.sql
-```
-
-5. Start the server:
+4. Start the server:
 ```bash
 # Development
 npm run dev
@@ -68,15 +57,34 @@ npm run dev
 npm start
 ```
 
+## Environment Configuration
+
+### Required Environment Variables
+
+```env
+# Supabase Configuration
+SUPABASE_URL=https://bwusbjpwqrfbvvdzsegv.supabase.co
+SUPABASE_ANON_KEY=your_anon_key_here
+SUPABASE_SERVICE_ROLE_KEY=your_service_role_key_here
+
+# Server Configuration
+PORT=5000
+NODE_ENV=development
+FRONTEND_URL=http://localhost:3000
+```
+
+**Important**: You'll need to get your service role key from your Supabase dashboard under Settings > API.
+
 ## API Endpoints
 
 ### Authentication
-- `POST /api/auth/register` - Register a new user
-- `POST /api/auth/login` - Login user
+- `POST /api/auth/register` - Register new user with Supabase
+- `POST /api/auth/login` - Login user with Supabase
+- `POST /api/auth/logout` - Logout user
 - `GET /api/auth/profile` - Get user profile (requires auth)
 
 ### Listings
-- `GET /api/listings` - Get all listings (with optional filters)
+- `GET /api/listings` - Get all listings (with filters)
 - `GET /api/listings/popular` - Get popular listings
 - `GET /api/listings/:id` - Get listing by ID
 - `POST /api/listings` - Create new listing (requires auth)
@@ -95,67 +103,50 @@ npm start
 - `PUT /api/users/profile` - Update user profile (requires auth)
 - `PATCH /api/users/host-status` - Toggle host status (requires auth)
 
-## Request/Response Examples
+## Authentication Flow
 
-### Register User
-```bash
-POST /api/auth/register
-Content-Type: application/json
+This backend integrates seamlessly with your existing Supabase authentication:
 
-{
-  "email": "user@example.com",
-  "password": "password123",
-  "fullName": "John Doe"
-}
+1. **Frontend** authenticates with Supabase directly
+2. **Frontend** sends Supabase auth token in `Authorization: Bearer <token>` header
+3. **Backend** validates token with Supabase
+4. **Backend** proceeds with database operations using Supabase client
+
+## Key Differences from Pure Express Backend
+
+- **No password hashing**: Supabase handles all auth
+- **No JWT creation**: Supabase provides tokens
+- **No database connection**: Supabase client handles all DB operations
+- **No user table**: Uses Supabase auth.users + profiles table
+- **RLS policies**: Database security handled by Supabase RLS
+
+## Database Operations
+
+All database operations use the Supabase JavaScript client:
+
+```javascript
+// Example: Get listings
+const { data, error } = await supabase
+  .from('listings')
+  .select('*')
+  .eq('is_active', true);
 ```
 
-### Create Listing
-```bash
-POST /api/listings
-Authorization: Bearer <jwt_token>
-Content-Type: application/json
+## Integration with Frontend
 
-{
-  "title": "Beautiful Apartment in Downtown",
-  "description": "A lovely apartment with great city views...",
-  "listingType": "entire_place",
-  "pricePerNight": 120.00,
-  "location": "New York, NY",
-  "maxGuests": 4,
-  "bedrooms": 2,
-  "bathrooms": 1,
-  "amenities": ["WiFi", "Kitchen", "Air Conditioning"],
-  "images": ["https://example.com/image1.jpg"]
-}
-```
+To use this backend with your React frontend:
 
-### Search Listings
-```bash
-GET /api/listings?location=New%20York&minPrice=50&maxPrice=200&guests=2&page=1&limit=10
-```
+1. Update your frontend API calls to point to `http://localhost:5000/api`
+2. Keep using Supabase auth on the frontend
+3. Pass Supabase tokens to backend API calls
+4. All existing functionality will work seamlessly
 
-## Environment Variables
+## Development Workflow
 
-See `.env.example` for all required environment variables.
-
-## Database Schema
-
-The database schema is defined in `database/schema.sql` and includes:
-
-- `profiles` - User accounts
-- `listings` - Property listings
-- `bookings` - Booking records
-- `listing_likes` - User likes on listings
-
-## Security Features
-
-- JWT-based authentication
-- Password hashing with bcrypt
-- Rate limiting
-- CORS protection
-- Security headers (Helmet)
-- Input validation and sanitization
-- SQL injection prevention (parameterized queries)
+1. Start Supabase (already running)
+2. Start backend: `npm run dev`
+3. Start frontend: `npm start` (in main project)
+4. Both will work together seamlessly
 
 ## Error Handling
 
@@ -168,34 +159,30 @@ The API returns consistent error responses:
 }
 ```
 
-## Development
+## Security Features
 
-```bash
-# Install dependencies
-npm install
+- **Supabase RLS**: Database-level security
+- **Token validation**: Supabase auth token verification
+- **Rate limiting**: Prevents abuse
+- **CORS protection**: Configurable origins
+- **Input validation**: Request validation and sanitization
+- **Security headers**: Helmet middleware
 
-# Run in development mode with auto-reload
-npm run dev
+## Deployment Considerations
 
-# Run tests
-npm test
-```
+1. Set `NODE_ENV=production`
+2. Configure proper CORS origins
+3. Set up Supabase service role key securely
+4. Configure rate limiting for production load
+5. Set up proper logging and monitoring
 
-## Deployment
+## Benefits of This Architecture
 
-1. Set up a PostgreSQL database
-2. Configure environment variables
-3. Run database migrations
-4. Deploy to your preferred hosting platform
+- **Maintains existing functionality**: All Supabase features work
+- **Familiar REST API**: Traditional Express.js patterns
+- **Easy scaling**: Can add middleware, caching, etc.
+- **Flexible**: Can add custom business logic
+- **Secure**: Leverages Supabase security features
+- **No migration needed**: Uses existing database and auth
 
-## Contributing
-
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Add tests if applicable
-5. Submit a pull request
-
-## License
-
-This project is licensed under the MIT License.
+This backend serves as a perfect bridge between your React frontend and Supabase backend, giving you the flexibility of Express.js while maintaining all the power of Supabase.

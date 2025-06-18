@@ -45,7 +45,8 @@ app.get('/health', (req, res) => {
   res.status(200).json({ 
     status: 'OK', 
     timestamp: new Date().toISOString(),
-    uptime: process.uptime()
+    uptime: process.uptime(),
+    service: 'StayFinder API with Supabase'
   });
 });
 
@@ -80,6 +81,8 @@ const PORT = process.env.PORT || 5000;
 
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT} in ${process.env.NODE_ENV} mode`);
+  console.log(`Supabase URL: ${process.env.SUPABASE_URL}`);
+  console.log(`Health check: http://localhost:${PORT}/health`);
 });
 
 module.exports = app;

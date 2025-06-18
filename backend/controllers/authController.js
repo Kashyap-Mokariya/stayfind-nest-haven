@@ -1,14 +1,6 @@
 
-const bcrypt = require('bcryptjs');
-const jwt = require('jsonwebtoken');
 const { validationResult } = require('express-validator');
-const db = require('../config/database');
-
-const generateToken = (userId) => {
-  return jwt.sign({ userId }, process.env.JWT_SECRET, {
-    expiresIn: process.env.JWT_EXPIRE || '7d'
-  });
-};
+const { supabase } = require('../config/supabase');
 
 const register = async (req, res) => {
   try {
@@ -19,40 +11,28 @@ const register = async (req, res) => {
 
     const { email, password, fullName } = req.body;
 
-    // Check if user already exists
-    const existingUser = await db.query('SELECT id FROM profiles WHERE email = $1', [email]);
-    if (existingUser.rows.length > 0) {
-      return res.status(400).json({ error: 'User already exists with this email' });
+    const { data, error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        data: {
+          full_name: fullName,
+        },
+      },
+    });
+
+    if (error) {
+      return res.status(400).json({ error: error.message });
     }
 
-    // Hash password
-    const saltRounds = 12;
-    const hashedPassword = await bcrypt.hash(password, saltRounds);
-
-    // Create user
-    const result = await db.query(
-      `INSERT INTO profiles (email, password_hash, full_name, created_at) 
-       VALUES ($1, $2, $3, NOW()) 
-       RETURNING id, email, full_name, created_at`,
-      [email, hashedPassword, fullName]
-    );
-
-    const user = result.rows[0];
-    const token = generateToken(user.id);
-
     res.status(201).json({
-      message: 'User registered successfully',
-      user: {
-        id: user.id,
-        email: user.email,
-        fullName: user.full_name,
-        createdAt: user.created_at
-      },
-      token
+      message: 'User created successfully',
+      user: data.user,
+      session: data.session
     });
   } catch (error) {
     console.error('Registration error:', error);
-    res.status(500).json({ error: 'Registration failed' });
+    res.status(500).json({ error: 'Internal server error' });
   }
 };
 
@@ -65,70 +45,63 @@ const login = async (req, res) => {
 
     const { email, password } = req.body;
 
-    // Get user with password hash
-    const result = await db.query(
-      'SELECT id, email, full_name, password_hash, created_at FROM profiles WHERE email = $1',
-      [email]
-    );
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
 
-    if (result.rows.length === 0) {
-      return res.status(401).json({ error: 'Invalid credentials' });
+    if (error) {
+      return res.status(400).json({ error: error.message });
     }
-
-    const user = result.rows[0];
-
-    // Verify password
-    const isValidPassword = await bcrypt.compare(password, user.password_hash);
-    if (!isValidPassword) {
-      return res.status(401).json({ error: 'Invalid credentials' });
-    }
-
-    const token = generateToken(user.id);
 
     res.json({
       message: 'Login successful',
-      user: {
-        id: user.id,
-        email: user.email,
-        fullName: user.full_name,
-        createdAt: user.created_at
-      },
-      token
+      user: data.user,
+      session: data.session
     });
   } catch (error) {
     console.error('Login error:', error);
-    res.status(500).json({ error: 'Login failed' });
+    res.status(500).json({ error: 'Internal server error' });
   }
 };
 
 const getProfile = async (req, res) => {
   try {
-    const result = await db.query(
-      'SELECT id, email, full_name, phone, bio, avatar_url, is_host, created_at FROM profiles WHERE id = $1',
-      [req.user.id]
-    );
+    const userId = req.user.id;
 
-    if (result.rows.length === 0) {
-      return res.status(404).json({ error: 'User not found' });
+    const { data, error } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('id', userId)
+      .single();
+
+    if (error && error.code !== 'PGRST116') {
+      return res.status(400).json({ error: error.message });
     }
 
-    const user = result.rows[0];
     res.json({
-      user: {
-        id: user.id,
-        email: user.email,
-        fullName: user.full_name,
-        phone: user.phone,
-        bio: user.bio,
-        avatarUrl: user.avatar_url,
-        isHost: user.is_host,
-        createdAt: user.created_at
-      }
+      user: req.user,
+      profile: data || null
     });
   } catch (error) {
     console.error('Get profile error:', error);
-    res.status(500).json({ error: 'Failed to get profile' });
+    res.status(500).json({ error: 'Internal server error' });
   }
 };
 
-module.exports = { register, login, getProfile };
+const logout = async (req, res) => {
+  try {
+    const { error } = await supabase.auth.signOut();
+
+    if (error) {
+      return res.status(400).json({ error: error.message });
+    }
+
+    res.json({ message: 'Logout successful' });
+  } catch (error) {
+    console.error('Logout error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};
+
+module.exports = { register, login, getProfile, logout };

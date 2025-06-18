@@ -1,5 +1,5 @@
 
-const db = require('../config/database');
+const { supabase } = require('../config/supabase');
 
 const toggleLike = async (req, res) => {
   try {
@@ -7,37 +7,48 @@ const toggleLike = async (req, res) => {
     const userId = req.user.id;
 
     // Check if like already exists
-    const existingLike = await db.query(
-      'SELECT id FROM listing_likes WHERE user_id = $1 AND listing_id = $2',
-      [userId, listingId]
-    );
+    const { data: existingLike, error: checkError } = await supabase
+      .from('listing_likes')
+      .select('id')
+      .eq('listing_id', listingId)
+      .eq('user_id', userId)
+      .single();
 
-    if (existingLike.rows.length > 0) {
+    if (checkError && checkError.code !== 'PGRST116') {
+      return res.status(400).json({ error: checkError.message });
+    }
+
+    if (existingLike) {
       // Unlike
-      await db.query(
-        'DELETE FROM listing_likes WHERE user_id = $1 AND listing_id = $2',
-        [userId, listingId]
-      );
-      
-      res.json({ 
-        message: 'Listing unliked successfully',
-        isLiked: false
-      });
+      const { error: deleteError } = await supabase
+        .from('listing_likes')
+        .delete()
+        .eq('listing_id', listingId)
+        .eq('user_id', userId);
+
+      if (deleteError) {
+        return res.status(400).json({ error: deleteError.message });
+      }
+
+      res.json({ liked: false, message: 'Listing unliked successfully' });
     } else {
       // Like
-      await db.query(
-        'INSERT INTO listing_likes (user_id, listing_id) VALUES ($1, $2)',
-        [userId, listingId]
-      );
-      
-      res.json({ 
-        message: 'Listing liked successfully',
-        isLiked: true
-      });
+      const { error: insertError } = await supabase
+        .from('listing_likes')
+        .insert({
+          listing_id: listingId,
+          user_id: userId
+        });
+
+      if (insertError) {
+        return res.status(400).json({ error: insertError.message });
+      }
+
+      res.json({ liked: true, message: 'Listing liked successfully' });
     }
   } catch (error) {
     console.error('Toggle like error:', error);
-    res.status(500).json({ error: 'Failed to toggle like' });
+    res.status(500).json({ error: 'Internal server error' });
   }
 };
 
@@ -46,58 +57,46 @@ const getLikeStatus = async (req, res) => {
     const { listingId } = req.params;
     const userId = req.user.id;
 
-    const result = await db.query(
-      'SELECT id FROM listing_likes WHERE user_id = $1 AND listing_id = $2',
-      [userId, listingId]
-    );
+    const { data, error } = await supabase
+      .from('listing_likes')
+      .select('id')
+      .eq('listing_id', listingId)
+      .eq('user_id', userId)
+      .single();
 
-    res.json({ isLiked: result.rows.length > 0 });
+    if (error && error.code !== 'PGRST116') {
+      return res.status(400).json({ error: error.message });
+    }
+
+    res.json({ liked: !!data });
   } catch (error) {
     console.error('Get like status error:', error);
-    res.status(500).json({ error: 'Failed to get like status' });
+    res.status(500).json({ error: 'Internal server error' });
   }
 };
 
 const getUserLikes = async (req, res) => {
   try {
     const userId = req.user.id;
-    const { page = 1, limit = 10 } = req.query;
-    const offset = (page - 1) * limit;
 
-    const query = `
-      SELECT l.*, ll.created_at as liked_at
-      FROM listing_likes ll
-      JOIN listings l ON ll.listing_id = l.id
-      WHERE ll.user_id = $1 AND l.is_active = true
-      ORDER BY ll.created_at DESC
-      LIMIT $2 OFFSET $3
-    `;
+    const { data, error } = await supabase
+      .from('listing_likes')
+      .select(`
+        id,
+        created_at,
+        listing:listings(*)
+      `)
+      .eq('user_id', userId)
+      .order('created_at', { ascending: false });
 
-    const result = await db.query(query, [userId, limit, offset]);
+    if (error) {
+      return res.status(400).json({ error: error.message });
+    }
 
-    // Get total count
-    const countResult = await db.query(
-      `SELECT COUNT(*) FROM listing_likes ll 
-       JOIN listings l ON ll.listing_id = l.id 
-       WHERE ll.user_id = $1 AND l.is_active = true`,
-      [userId]
-    );
-
-    const totalCount = parseInt(countResult.rows[0].count);
-
-    res.json({
-      likedListings: result.rows,
-      pagination: {
-        currentPage: parseInt(page),
-        totalPages: Math.ceil(totalCount / limit),
-        totalCount,
-        hasNextPage: page * limit < totalCount,
-        hasPrevPage: page > 1
-      }
-    });
+    res.json(data);
   } catch (error) {
     console.error('Get user likes error:', error);
-    res.status(500).json({ error: 'Failed to get user likes' });
+    res.status(500).json({ error: 'Internal server error' });
   }
 };
 
