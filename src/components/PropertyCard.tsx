@@ -4,6 +4,8 @@ import { Badge } from '@/components/ui/badge';
 import { MapPin, Users, Bed, Bath } from 'lucide-react';
 import { Listing } from '@/hooks/useListings';
 import { Link } from 'react-router-dom';
+import RatingDisplay from './RatingDisplay';
+import LikeButton from './LikeButton';
 
 interface PropertyCardProps {
   listing: Listing;
@@ -24,9 +26,19 @@ export default function PropertyCard({ listing }: PropertyCardProps) {
           <Badge className="absolute top-2 left-2 bg-white text-gray-800">
             {listing.listing_type.replace('_', ' ')}
           </Badge>
+          <div className="absolute top-2 right-2">
+            <LikeButton listingId={listing.id} size="sm" />
+          </div>
         </div>
         <CardContent className="p-4">
-          <h3 className="font-semibold text-lg mb-2 line-clamp-1">{listing.title}</h3>
+          <div className="flex justify-between items-start mb-2">
+            <h3 className="font-semibold text-lg line-clamp-1 flex-1">{listing.title}</h3>
+            <RatingDisplay 
+              rating={listing.rating || 0} 
+              totalReviews={listing.total_reviews || 0}
+              size="sm"
+            />
+          </div>
           <div className="flex items-center text-gray-600 mb-2">
             <MapPin className="h-4 w-4 mr-1" />
             <span className="text-sm">{listing.location}</span>
