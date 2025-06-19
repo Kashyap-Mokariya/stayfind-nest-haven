@@ -34,3 +34,13 @@ export function useToggleLike(listingId: string) {
     },
   });
 }
+
+export function usePopularListings() {
+  return useQuery({
+    queryKey: ['popular-listings'],
+    queryFn: async () => {
+      const response = await likesAPI.getPopularListings();
+      return response.data;
+    },
+  });
+}

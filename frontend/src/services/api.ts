@@ -1,62 +1,56 @@
 
 import axios from 'axios';
+import { supabase } from '@/config/supabase';
 
-const API_BASE_URL = 'http://localhost:5000/api';
+const API_BASE_URL = 'http://localhost:3001/api';
 
-// Create axios instance
+// Create axios instance with interceptors for auth
 const api = axios.create({
   baseURL: API_BASE_URL,
-  headers: {
-    'Content-Type': 'application/json',
-  },
 });
 
 // Add auth token to requests
-api.interceptors.request.use((config) => {
-  const token = localStorage.getItem('supabase.auth.token');
-  if (token) {
-    const parsedToken = JSON.parse(token);
-    config.headers.Authorization = `Bearer ${parsedToken.access_token}`;
+api.interceptors.request.use(async (config) => {
+  const { data: { session } } = await supabase.auth.getSession();
+  if (session?.access_token) {
+    config.headers.Authorization = `Bearer ${session.access_token}`;
   }
   return config;
 });
 
-export default api;
-
-// Auth API
 export const authAPI = {
-  register: (data: { email: string; password: string; fullName: string }) =>
-    api.post('/auth/register', data),
-  login: (data: { email: string; password: string }) =>
-    api.post('/auth/login', data),
+  register: (userData: any) => api.post('/auth/register', userData),
+  login: (credentials: any) => api.post('/auth/login', credentials),
   logout: () => api.post('/auth/logout'),
   getProfile: () => api.get('/auth/profile'),
 };
 
-// Listings API
 export const listingsAPI = {
-  getListings: (params?: any) => api.get('/listings', { params }),
+  getListings: (filters?: any) => api.get('/listings', { params: filters }),
   getListingById: (id: string) => api.get(`/listings/${id}`),
-  createListing: (data: any) => api.post('/listings', data),
+  createListing: (listingData: any) => api.post('/listings', listingData),
+  updateListing: (id: string, listingData: any) => api.put(`/listings/${id}`, listingData),
+  deleteListing: (id: string) => api.delete(`/listings/${id}`),
   getPopularListings: () => api.get('/listings/popular'),
 };
 
-// Likes API
 export const likesAPI = {
-  toggleLike: (listingId: string) => api.post(`/likes/listing/${listingId}`),
-  getLikeStatus: (listingId: string) => api.get(`/likes/listing/${listingId}`),
-  getUserLikes: () => api.get('/likes/user'),
+  getLikeStatus: (listingId: string) => api.get(`/likes/${listingId}/status`),
+  toggleLike: (listingId: string) => api.post(`/likes/${listingId}/toggle`),
+  getPopularListings: () => api.get('/likes/popular'),
 };
 
-// Bookings API
 export const bookingsAPI = {
-  createBooking: (data: any) => api.post('/bookings', data),
-  getUserBookings: () => api.get('/bookings'),
+  createBooking: (bookingData: any) => api.post('/bookings', bookingData),
+  getBookings: () => api.get('/bookings'),
   getBookingById: (id: string) => api.get(`/bookings/${id}`),
+  updateBooking: (id: string, bookingData: any) => api.put(`/bookings/${id}`, bookingData),
+  cancelBooking: (id: string) => api.delete(`/bookings/${id}`),
 };
 
-// Users API
-export const usersAPI = {
-  updateProfile: (data: any) => api.put('/users/profile', data),
-  toggleHostStatus: () => api.patch('/users/host-status'),
+export const userAPI = {
+  getProfile: () => api.get('/users/profile'),
+  updateProfile: (profileData: any) => api.put('/users/profile', profileData),
+  getBookings: () => api.get('/users/bookings'),
+  getLikedListings: () => api.get('/users/liked-listings'),
 };

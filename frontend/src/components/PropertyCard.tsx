@@ -3,6 +3,8 @@ import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import { MapPin, Users, Bed, Bath } from 'lucide-react';
 import { Listing } from '@/hooks/useListings';
 import { Link } from 'react-router-dom';
+import RatingDisplay from './RatingDisplay';
+import LikeButton from './LikeButton';
 
 interface PropertyCardProps {
   listing: Listing;
@@ -13,7 +15,7 @@ export default function PropertyCard({ listing }: PropertyCardProps) {
 
   return (
     <Link to={`/listing/${listing.id}`}>
-      <Card className="group cursor-pointer border-0 shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden bg-white rounded-2xl">
+      <Card className="group cursor-pointer border-0 shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden bg-white rounded-2xl relative z-10">
         <div className="relative h-48">
           <img
             src={imageUrl}
@@ -23,18 +25,18 @@ export default function PropertyCard({ listing }: PropertyCardProps) {
           <div className="absolute top-2 left-2 bg-white text-gray-800 px-2 py-1 rounded text-xs font-medium">
             {listing.listing_type.replace('_', ' ')}
           </div>
+          <div className="absolute top-2 right-2">
+            <LikeButton listingId={listing.id} size="sm" />
+          </div>
         </div>
         <CardContent className="p-4">
           <div className="flex justify-between items-start mb-2">
             <h3 className="font-semibold text-lg line-clamp-1 flex-1">{listing.title}</h3>
-            {listing.rating && (
-              <div className="flex items-center text-xs">
-                <span className="font-medium">{listing.rating.toFixed(1)}</span>
-                {listing.total_reviews && (
-                  <span className="text-gray-600 ml-1">({listing.total_reviews})</span>
-                )}
-              </div>
-            )}
+            <RatingDisplay 
+              rating={listing.rating || 0} 
+              totalReviews={listing.total_reviews || 0}
+              size="sm"
+            />
           </div>
           <div className="flex items-center text-gray-600 mb-2">
             <MapPin className="h-4 w-4 mr-1" />

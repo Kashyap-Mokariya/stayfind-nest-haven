@@ -2,14 +2,13 @@
 import { useNavigate } from 'react-router-dom';
 import Header from '@/components/Header';
 import SearchBar, { SearchParams } from '@/components/SearchBar';
-import { usePopularListings } from '@/hooks/useListings';
-import PropertyCard from '@/components/PropertyCard';
+import PopularDestinations from '@/components/PopularDestinations';
 
 export default function HomePage() {
   const navigate = useNavigate();
-  const { data: popularListings, isLoading } = usePopularListings();
 
   const handleSearch = (params: SearchParams) => {
+    // Navigate to listings page with search parameters
     const searchParams = new URLSearchParams();
     if (params.location) searchParams.set('location', params.location);
     if (params.checkIn) searchParams.set('checkIn', params.checkIn);
@@ -20,10 +19,12 @@ export default function HomePage() {
   };
 
   return (
-    <div className="min-h-screen">
+    <div className="h-screen overflow-hidden">
       <Header transparent={true} />
       
+      {/* Hero Section with Background - Full height minus any potential mobile browser UI */}
       <div className="relative h-screen bg-gradient-to-br from-orange-400 via-teal-300 to-teal-600 overflow-hidden">
+        {/* Background decorative elements */}
         <div className="absolute inset-0">
           <div className="absolute top-20 left-10 w-32 h-32 bg-white/20 rounded-full blur-xl"></div>
           <div className="absolute top-40 right-20 w-24 h-24 bg-white/15 rounded-full blur-lg"></div>
@@ -32,6 +33,7 @@ export default function HomePage() {
 
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-full flex flex-col justify-center">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-center flex-1 max-h-full py-20">
+            {/* Left Content */}
             <div className="text-white space-y-6 lg:space-y-8">
               <div className="space-y-2">
                 <p className="text-xs sm:text-sm font-medium tracking-wider uppercase opacity-90">
@@ -42,30 +44,11 @@ export default function HomePage() {
                 </h1>
               </div>
 
-              {!isLoading && popularListings && popularListings.length > 0 && (
-                <div className="space-y-4">
-                  <h2 className="text-xl font-semibold">Popular Destinations</h2>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-4">
-                    {popularListings.slice(0, 3).map((listing) => (
-                      <div key={listing.id} className="bg-white/10 backdrop-blur-sm rounded-lg p-3">
-                        <div className="flex items-center space-x-3">
-                          <img
-                            src={listing.images?.[0] || 'https://images.unsplash.com/photo-1721322800607-8c38375eef04'}
-                            alt={listing.title}
-                            className="w-12 h-12 rounded-lg object-cover"
-                          />
-                          <div>
-                            <h3 className="font-medium text-sm">{listing.title}</h3>
-                            <p className="text-xs opacity-90">{listing.location}</p>
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
+              {/* Popular Destinations */}
+              <PopularDestinations />
             </div>
 
+            {/* Right Content - Floating Image */}
             <div className="relative lg:block hidden">
               <div className="absolute inset-0 bg-gradient-to-br from-teal-400 to-blue-600 rounded-full opacity-20 blur-3xl transform scale-150"></div>
               <img
@@ -76,6 +59,7 @@ export default function HomePage() {
             </div>
           </div>
 
+          {/* Search Bar at Bottom */}
           <div className="pb-6 lg:pb-12">
             <SearchBar onSearch={handleSearch} />
           </div>
