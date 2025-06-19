@@ -2,7 +2,7 @@
 import axios from 'axios';
 import { supabase } from '@/config/supabase';
 
-const API_BASE_URL = 'http://localhost:3001/api';
+const API_BASE_URL = 'http://localhost:5000/api';
 
 // Create axios instance with interceptors for auth
 const api = axios.create({

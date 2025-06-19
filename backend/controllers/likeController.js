@@ -3,10 +3,10 @@ const { supabase } = require('../config/supabase');
 
 const toggleLike = async (req, res) => {
   try {
-    const { listingId } = req.params;
     const userId = req.user.id;
+    const { listingId } = req.params;
 
-    // Check if like already exists
+    // Check if like exists
     const { data: existingLike, error: checkError } = await supabase
       .from('listing_likes')
       .select('id')
@@ -37,7 +37,7 @@ const toggleLike = async (req, res) => {
         .from('listing_likes')
         .insert({
           listing_id: listingId,
-          user_id: userId
+          user_id: userId,
         });
 
       if (insertError) {
@@ -54,8 +54,8 @@ const toggleLike = async (req, res) => {
 
 const getLikeStatus = async (req, res) => {
   try {
-    const { listingId } = req.params;
     const userId = req.user.id;
+    const { listingId } = req.params;
 
     const { data, error } = await supabase
       .from('listing_likes')
@@ -82,12 +82,31 @@ const getUserLikes = async (req, res) => {
     const { data, error } = await supabase
       .from('listing_likes')
       .select(`
-        id,
-        created_at,
-        listing:listings(*)
+        listing_id,
+        listings (*)
       `)
-      .eq('user_id', userId)
-      .order('created_at', { ascending: false });
+      .eq('user_id', userId);
+
+    if (error) {
+      return res.status(400).json({ error: error.message });
+    }
+
+    const likedListings = data.map(item => item.listings);
+    res.json(likedListings);
+  } catch (error) {
+    console.error('Get user likes error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};
+
+const getPopularListings = async (req, res) => {
+  try {
+    const { data, error } = await supabase
+      .from('listings_with_likes')
+      .select('*')
+      .order('like_count', { ascending: false })
+      .order('rating', { ascending: false })
+      .limit(3);
 
     if (error) {
       return res.status(400).json({ error: error.message });
@@ -95,7 +114,7 @@ const getUserLikes = async (req, res) => {
 
     res.json(data);
   } catch (error) {
-    console.error('Get user likes error:', error);
+    console.error('Get popular listings error:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 };
@@ -103,5 +122,6 @@ const getUserLikes = async (req, res) => {
 module.exports = {
   toggleLike,
   getLikeStatus,
-  getUserLikes
+  getUserLikes,
+  getPopularListings
 };

@@ -3,15 +3,17 @@ const express = require('express');
 const { 
   toggleLike, 
   getLikeStatus, 
-  getUserLikes 
+  getUserLikes,
+  getPopularListings 
 } = require('../controllers/likeController');
-const { authenticateToken } = require('../middleware/auth');
+const { authenticateToken, optionalAuth } = require('../middleware/auth');
 
 const router = express.Router();
 
 // Routes
-router.post('/listing/:listingId', authenticateToken, toggleLike);
-router.get('/listing/:listingId', authenticateToken, getLikeStatus);
+router.get('/popular', getPopularListings);
+router.post('/:listingId/toggle', authenticateToken, toggleLike);
+router.get('/:listingId/status', authenticateToken, getLikeStatus);
 router.get('/user', authenticateToken, getUserLikes);
 
 module.exports = router;

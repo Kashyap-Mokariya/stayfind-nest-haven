@@ -1,0 +1,180 @@
+
+import { useParams } from 'react-router-dom';
+import { useListing } from '@/hooks/useListings';
+import Header from '@/components/Header';
+import { Badge } from '@/components/ui/badge';
+import { MapPin, Users, Bed, Bath, Wifi } from 'lucide-react';
+import RatingDisplay from '@/components/RatingDisplay';
+import LikeButton from '@/components/LikeButton';
+
+export default function ListingDetailPage() {
+  const { id } = useParams<{ id: string }>();
+  const { data: listing, isLoading } = useListing(id!);
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <Header />
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div className="lg:col-span-2 space-y-6">
+              <div className="h-96 w-full rounded-lg bg-gray-300 animate-pulse" />
+              <div className="space-y-4">
+                <div className="h-8 bg-gray-300 rounded animate-pulse" />
+                <div className="h-4 bg-gray-300 rounded animate-pulse w-1/2" />
+                <div className="h-32 bg-gray-300 rounded animate-pulse" />
+              </div>
+            </div>
+            <div>
+              <div className="h-96 w-full rounded-lg bg-gray-300 animate-pulse" />
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (!listing) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <Header />
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <div className="text-center">
+            <h1 className="text-2xl font-bold text-gray-900 mb-4">Listing not found</h1>
+            <p className="text-gray-600">The listing you're looking for doesn't exist.</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  const imageUrl = listing.images?.[0] || 'https://images.unsplash.com/photo-1721322800607-8c38375eef04';
+
+  return (
+    <div className="min-h-screen bg-gray-50">
+      <Header />
+      
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          {/* Main Content */}
+          <div className="lg:col-span-2 space-y-6">
+            {/* Images */}
+            <div className="rounded-lg overflow-hidden relative">
+              <img
+                src={imageUrl}
+                alt={listing.title}
+                className="w-full h-96 object-cover"
+              />
+              <div className="absolute top-4 right-4">
+                <LikeButton listingId={listing.id} size="lg" />
+              </div>
+            </div>
+
+            {/* Title and Location */}
+            <div>
+              <div className="flex items-center gap-2 mb-2">
+                <Badge>{listing.listing_type.replace('_', ' ')}</Badge>
+              </div>
+              <div className="flex justify-between items-start mb-2">
+                <h1 className="text-3xl font-bold text-gray-900 flex-1">{listing.title}</h1>
+                <RatingDisplay 
+                  rating={listing.rating || 0} 
+                  totalReviews={listing.total_reviews || 0}
+                  size="lg"
+                />
+              </div>
+              <div className="flex items-center text-gray-600">
+                <MapPin className="h-4 w-4 mr-1" />
+                <span>{listing.location}</span>
+              </div>
+            </div>
+
+            {/* Property Details */}
+            <div className="flex items-center space-x-6 text-gray-600">
+              <div className="flex items-center">
+                <Users className="h-5 w-5 mr-2" />
+                <span>{listing.max_guests} guests</span>
+              </div>
+              <div className="flex items-center">
+                <Bed className="h-5 w-5 mr-2" />
+                <span>{listing.bedrooms} bedrooms</span>
+              </div>
+              <div className="flex items-center">
+                <Bath className="h-5 w-5 mr-2" />
+                <span>{listing.bathrooms} bathrooms</span>
+              </div>
+            </div>
+
+            {/* Description */}
+            <div>
+              <h2 className="text-xl font-semibold mb-3">About this place</h2>
+              <p className="text-gray-700 leading-relaxed">{listing.description}</p>
+            </div>
+
+            {/* Amenities */}
+            {listing.amenities && listing.amenities.length > 0 && (
+              <div>
+                <h2 className="text-xl font-semibold mb-3">Amenities</h2>
+                <div className="grid grid-cols-2 gap-3">
+                  {listing.amenities.map((amenity, index) => (
+                    <div key={index} className="flex items-center">
+                      <Wifi className="h-4 w-4 mr-2 text-gray-600" />
+                      <span className="text-gray-700">{amenity}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Booking Sidebar */}
+          <div className="bg-white p-6 rounded-lg shadow-lg h-fit">
+            <div className="mb-4">
+              <div className="text-2xl font-bold">${listing.price_per_night}</div>
+              <div className="text-gray-600">per night</div>
+            </div>
+            
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Check-in
+                </label>
+                <input
+                  type="date"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Check-out
+                </label>
+                <input
+                  type="date"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Guests
+                </label>
+                <select className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                  {Array.from({ length: listing.max_guests }, (_, i) => (
+                    <option key={i + 1} value={i + 1}>
+                      {i + 1} guest{i > 0 ? 's' : ''}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              
+              <button className="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 transition-colors">
+                Reserve
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
