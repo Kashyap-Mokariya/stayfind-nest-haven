@@ -35,6 +35,7 @@ export default function LikeButton({ listingId, size = 'md' }: LikeButtonProps) 
       return;
     }
 
+    console.log('Toggling like for listing:', listingId, 'Current status:', isLiked);
     toggleLike.mutate();
   };
 

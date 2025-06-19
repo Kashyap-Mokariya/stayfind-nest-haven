@@ -6,10 +6,11 @@ import { Badge } from '@/components/ui/badge';
 import { MapPin, Users, Bed, Bath, Wifi } from 'lucide-react';
 import RatingDisplay from '@/components/RatingDisplay';
 import LikeButton from '@/components/LikeButton';
+import BookingForm from '@/components/BookingForm';
 
 export default function ListingDetailPage() {
   const { id } = useParams<{ id: string }>();
-  const { data: listing, isLoading } = useListing(id!);
+  const { data: listing, isLoading, error } = useListing(id!);
 
   if (isLoading) {
     return (
@@ -34,7 +35,8 @@ export default function ListingDetailPage() {
     );
   }
 
-  if (!listing) {
+  if (error || !listing) {
+    console.error('Listing error:', error);
     return (
       <div className="min-h-screen bg-gray-50">
         <Header />
@@ -128,50 +130,8 @@ export default function ListingDetailPage() {
           </div>
 
           {/* Booking Sidebar */}
-          <div className="bg-white p-6 rounded-lg shadow-lg h-fit">
-            <div className="mb-4">
-              <div className="text-2xl font-bold">${listing.price_per_night}</div>
-              <div className="text-gray-600">per night</div>
-            </div>
-            
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Check-in
-                </label>
-                <input
-                  type="date"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-              </div>
-              
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Check-out
-                </label>
-                <input
-                  type="date"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-              </div>
-              
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Guests
-                </label>
-                <select className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
-                  {Array.from({ length: listing.max_guests }, (_, i) => (
-                    <option key={i + 1} value={i + 1}>
-                      {i + 1} guest{i > 0 ? 's' : ''}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              
-              <button className="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 transition-colors">
-                Reserve
-              </button>
-            </div>
+          <div>
+            <BookingForm listing={listing} />
           </div>
         </div>
       </div>

@@ -10,8 +10,13 @@ export function useListingLike(listingId: string) {
     queryKey: ['listing-like', listingId, user?.id],
     queryFn: async () => {
       if (!user) return false;
-      const response = await likesAPI.getLikeStatus(listingId);
-      return response.data.liked;
+      try {
+        const response = await likesAPI.getLikeStatus(listingId);
+        return response.data.liked;
+      } catch (error) {
+        console.error('Error fetching like status:', error);
+        return false;
+      }
     },
     enabled: !!user && !!listingId,
   });
@@ -27,10 +32,14 @@ export function useToggleLike(listingId: string) {
       const response = await likesAPI.toggleLike(listingId);
       return response.data;
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
+      console.log('Like toggled successfully:', data);
       queryClient.invalidateQueries({ queryKey: ['listing-like', listingId] });
       queryClient.invalidateQueries({ queryKey: ['listings'] });
       queryClient.invalidateQueries({ queryKey: ['popular-listings'] });
+    },
+    onError: (error) => {
+      console.error('Error toggling like:', error);
     },
   });
 }
@@ -39,8 +48,13 @@ export function usePopularListings() {
   return useQuery({
     queryKey: ['popular-listings'],
     queryFn: async () => {
-      const response = await likesAPI.getPopularListings();
-      return response.data;
+      try {
+        const response = await likesAPI.getPopularListings();
+        return response.data;
+      } catch (error) {
+        console.error('Error fetching popular listings:', error);
+        return [];
+      }
     },
   });
 }
