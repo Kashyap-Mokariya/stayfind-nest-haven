@@ -57,49 +57,6 @@ export type Database = {
             referencedRelation: "listings"
             referencedColumns: ["id"]
           },
-          {
-            foreignKeyName: "bookings_listing_id_fkey"
-            columns: ["listing_id"]
-            isOneToOne: false
-            referencedRelation: "listings_with_likes"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      listing_likes: {
-        Row: {
-          created_at: string | null
-          id: string
-          listing_id: string
-          user_id: string
-        }
-        Insert: {
-          created_at?: string | null
-          id?: string
-          listing_id: string
-          user_id: string
-        }
-        Update: {
-          created_at?: string | null
-          id?: string
-          listing_id?: string
-          user_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "listing_likes_listing_id_fkey"
-            columns: ["listing_id"]
-            isOneToOne: false
-            referencedRelation: "listings"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "listing_likes_listing_id_fkey"
-            columns: ["listing_id"]
-            isOneToOne: false
-            referencedRelation: "listings_with_likes"
-            referencedColumns: ["id"]
-          },
         ]
       }
       listings: {
@@ -119,9 +76,7 @@ export type Database = {
           longitude: number | null
           max_guests: number
           price_per_night: number
-          rating: number | null
           title: string
-          total_reviews: number | null
           updated_at: string | null
         }
         Insert: {
@@ -140,9 +95,7 @@ export type Database = {
           longitude?: number | null
           max_guests?: number
           price_per_night: number
-          rating?: number | null
           title: string
-          total_reviews?: number | null
           updated_at?: string | null
         }
         Update: {
@@ -161,9 +114,7 @@ export type Database = {
           longitude?: number | null
           max_guests?: number
           price_per_night?: number
-          rating?: number | null
           title?: string
-          total_reviews?: number | null
           updated_at?: string | null
         }
         Relationships: []
@@ -203,37 +154,10 @@ export type Database = {
       }
     }
     Views: {
-      listings_with_likes: {
-        Row: {
-          amenities: string[] | null
-          bathrooms: number | null
-          bedrooms: number | null
-          created_at: string | null
-          description: string | null
-          host_id: string | null
-          id: string | null
-          images: string[] | null
-          is_active: boolean | null
-          latitude: number | null
-          like_count: number | null
-          listing_type: Database["public"]["Enums"]["listing_type"] | null
-          location: string | null
-          longitude: number | null
-          max_guests: number | null
-          price_per_night: number | null
-          rating: number | null
-          title: string | null
-          total_reviews: number | null
-          updated_at: string | null
-        }
-        Relationships: []
-      }
+      [_ in never]: never
     }
     Functions: {
-      get_listing_like_count: {
-        Args: { listing_uuid: string }
-        Returns: number
-      }
+      [_ in never]: never
     }
     Enums: {
       booking_status: "pending" | "confirmed" | "cancelled" | "completed"

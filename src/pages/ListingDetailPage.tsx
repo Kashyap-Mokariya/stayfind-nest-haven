@@ -2,12 +2,12 @@
 import { useParams } from 'react-router-dom';
 import { useListing } from '@/hooks/useListings';
 import Header from '@/components/Header';
+import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
-import { MapPin, Users, Bed, Bath, Wifi } from 'lucide-react';
+import { MapPin, Users, Bed, Bath, Wifi, Car } from 'lucide-react';
 import BookingForm from '@/components/BookingForm';
-import RatingDisplay from '@/components/RatingDisplay';
-import LikeButton from '@/components/LikeButton';
 
 export default function ListingDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -59,15 +59,12 @@ export default function ListingDetailPage() {
           {/* Main Content */}
           <div className="lg:col-span-2 space-y-6">
             {/* Images */}
-            <div className="rounded-lg overflow-hidden relative">
+            <div className="rounded-lg overflow-hidden">
               <img
                 src={imageUrl}
                 alt={listing.title}
                 className="w-full h-96 object-cover"
               />
-              <div className="absolute top-4 right-4">
-                <LikeButton listingId={listing.id} size="lg" />
-              </div>
             </div>
 
             {/* Title and Location */}
@@ -75,14 +72,7 @@ export default function ListingDetailPage() {
               <div className="flex items-center gap-2 mb-2">
                 <Badge>{listing.listing_type.replace('_', ' ')}</Badge>
               </div>
-              <div className="flex justify-between items-start mb-2">
-                <h1 className="text-3xl font-bold text-gray-900 flex-1">{listing.title}</h1>
-                <RatingDisplay 
-                  rating={listing.rating || 0} 
-                  totalReviews={listing.total_reviews || 0}
-                  size="lg"
-                />
-              </div>
+              <h1 className="text-3xl font-bold text-gray-900 mb-2">{listing.title}</h1>
               <div className="flex items-center text-gray-600">
                 <MapPin className="h-4 w-4 mr-1" />
                 <span>{listing.location}</span>
